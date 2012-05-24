@@ -30,7 +30,7 @@ Description: lzh archive decompressor
 Package: liblhasa-dev
 Section: libdevel
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, liblhasa0 (= ${binary:Version})
 Description: lzh decompression library - development files 
  Lhasa is a library for parsing LHA (.lzh) archives and a free
  replacement for the Unix LHA tool.
