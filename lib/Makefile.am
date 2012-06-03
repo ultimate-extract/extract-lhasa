@@ -6,13 +6,11 @@ check_LIBRARIES=liblhasatest.a
 EXTRA_DIST =                                            \
 	bit_stream_reader.c                             \
 	lh_new_decoder.c                                \
+	pma_common.c                                    \
 	tree_decode.c
 
 SRC =                                                   \
 	crc16.c                 crc16.h                 \
-	ext_common.c                                    \
-	ext_unix.c                                      \
-	ext_win.c                                       \
 	ext_header.c            ext_header.h            \
 	lha_arch_unix.c         lha_arch.h              \
 	lha_arch_win32.c                                \
@@ -30,6 +28,7 @@ SRC =                                                   \
 	lh7_decoder.c                                   \
 	lz5_decoder.c                                   \
 	lzs_decoder.c                                   \
+	pm1_decoder.c                                   \
 	pm2_decoder.c
 
 liblhasatest_a_CFLAGS=$(TEST_CFLAGS) -DALLOC_TESTING -I../test -g

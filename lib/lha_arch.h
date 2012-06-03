@@ -152,5 +152,18 @@ LHAFileType lha_arch_exists(char *filename);
 
 int lha_arch_chdir(char *path);
 
+/**
+ * Create a symbolic link.
+ *
+ * If a file already exists at the location of the link to be created, it is
+ * overwritten.
+ *
+ * @param path        Path to the symbolic link to create.
+ * @param target      Target for the symbolic link.
+ * @return            Non-zero for success.
+ */
+
+int lha_arch_symlink(char *path, char *target);
+
 #endif /* ifndef LHASA_LHA_ARCH_H */
 
