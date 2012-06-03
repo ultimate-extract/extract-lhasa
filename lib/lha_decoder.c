@@ -39,7 +39,8 @@ extern LHADecoderType lha_lh5_decoder;
 extern LHADecoderType lha_lh6_decoder;
 extern LHADecoderType lha_lh7_decoder;
 
-// PMarc compression algorithm:
+// PMarc compression algorithms:
+extern LHADecoderType lha_pm1_decoder;
 extern LHADecoderType lha_pm2_decoder;
 
 static struct {
@@ -56,6 +57,7 @@ static struct {
 	{ "-lh6-", &lha_lh6_decoder },
 	{ "-lh7-", &lha_lh7_decoder },
 	{ "-pm0-", &lha_null_decoder },
+	{ "-pm1-", &lha_pm1_decoder },
 	{ "-pm2-", &lha_pm2_decoder },
 };
 
@@ -85,6 +87,7 @@ LHADecoder *lha_decoder_new(LHADecoderType *dtype,
 	decoder->outbuf_len = 0;
 	decoder->stream_pos = 0;
 	decoder->stream_length = stream_length;
+	decoder->decoder_failed = 0;
 	decoder->crc = 0;
 
 	// Private data area follows the structure.
@@ -197,6 +200,13 @@ size_t lha_decoder_read(LHADecoder *decoder, uint8_t *buf, size_t buf_len)
 		decoder->outbuf_pos += bytes;
 		filled += bytes;
 
+		// If we previously encountered a failure reading from
+		// the decoder, don't try to call the read function again.
+
+		if (decoder->decoder_failed) {
+			break;
+		}
+
 		// If outbuf is now empty, we can process another run to
 		// re-fill it.
 
@@ -210,6 +220,7 @@ size_t lha_decoder_read(LHADecoder *decoder, uint8_t *buf, size_t buf_len)
 		// No more data to be read?
 
 		if (decoder->outbuf_len == 0) {
+			decoder->decoder_failed = 1;
 			break;
 		}
 	}
@@ -229,5 +240,15 @@ size_t lha_decoder_read(LHADecoder *decoder, uint8_t *buf, size_t buf_len)
 	}
 
 	return filled;
+}
+
+uint16_t lha_decoder_get_crc(LHADecoder *decoder)
+{
+	return decoder->crc;
+}
+
+size_t lha_decoder_get_length(LHADecoder *decoder)
+{
+	return decoder->stream_pos;
 }
 

@@ -31,24 +31,22 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define COMMON_HEADER_LEN 22 /* bytes */
 
 // Minimum length of a level 0 header (with zero-length filename).
-
 #define LEVEL_0_MIN_HEADER_LEN 22 /* bytes */
 
 // Minimum length of a level 1 base header (with zero-length filename).
-
 #define LEVEL_1_MIN_HEADER_LEN 25 /* bytes */
 
 // Length of a level 2 base header.
-
 #define LEVEL_2_HEADER_LEN 26 /* bytes */
 
 // Length of a level 3 base header.
-
 #define LEVEL_3_HEADER_LEN 32 /* bytes */
 
 // Maximum length of a level 3 header (including extended headers).
-
 #define LEVEL_3_MAX_HEADER_LEN (1024 * 1024) /* 1 MB */
+
+// Length of a level 0 Unix extended area.
+#define LEVEL_0_UNIX_EXTENDED_LEN 12
 
 #define RAW_DATA(hdr_ptr, off)  ((*hdr_ptr)->raw_data[off])
 #define RAW_DATA_LEN(hdr_ptr)   ((*hdr_ptr)->raw_data_len)
@@ -176,6 +174,33 @@ static void msdos_path_to_unix(char *path)
 			path[i] = '/';
 		}
 	}
+}
+
+// Parse a Unix symbolic link. These are stored in the format:
+// header->filename = symlink|target
+
+static int parse_symlink(LHAFileHeader *header)
+{
+	char *p;
+
+	p = strchr(header->filename, '|');
+
+	if (p == NULL) {
+		return 0;
+	}
+
+	header->symlink_target = strdup(p + 1);
+
+	if (header->symlink_target == NULL) {
+		return 0;
+	}
+
+	// Cut the string in half at the separator. Keep the left side
+	// as the value for filename.
+
+	*p = '\0';
+
+	return 1;
 }
 
 // Decode the path field in the header.
@@ -398,6 +423,36 @@ static int read_l1_extended_headers(LHAFileHeader **header,
 	return 1;
 }
 
+// Handling for level 0 extended areas.
+
+static void process_level0_extended_area(LHAFileHeader *header,
+                                         uint8_t *data, size_t data_len)
+{
+	// PMarc archives can include comments that are stored in the
+	// extended area. It is possible that this could conflict with
+	// the logic below, so specifically exclude them.
+
+	if (!strncmp(header->compress_method, "-pm", 3)) {
+		return;
+	}
+
+	// Only Unix extended areas are supported for now, although some
+	// tools can generate other types.
+
+	if (data_len < LEVEL_0_UNIX_EXTENDED_LEN
+	 || data[0] != LHA_OS_TYPE_UNIX || data[1] != 0) {
+		return;
+	}
+
+	header->os_type = LHA_OS_TYPE_UNIX;
+	header->timestamp = lha_decode_uint32(data + 2);
+	header->unix_perms = lha_decode_uint16(data + 6);
+	header->unix_uid = lha_decode_uint16(data + 8);
+	header->unix_gid = lha_decode_uint16(data + 10);
+
+	header->extra_flags |= LHA_FILE_UNIX_PERMS | LHA_FILE_UNIX_UID_GID;
+}
+
 // Decode a level 0 or 1 header.
 
 static int decode_level0_header(LHAFileHeader **header, LHAInputStream *stream)
@@ -484,6 +539,16 @@ static int decode_level0_header(LHAFileHeader **header, LHAInputStream *stream)
 	// CRC field.
 
 	(*header)->crc = lha_decode_uint16(&RAW_DATA(header, 22 + path_len));
+
+	// Level 0 headers can contain extended data through different schemes
+	// to the extended header system used in level 1+.
+
+	if ((*header)->header_level == 0
+	 && header_len > LEVEL_0_MIN_HEADER_LEN + path_len) {
+		process_level0_extended_area(*header,
+		  &RAW_DATA(header, LEVEL_0_MIN_HEADER_LEN + 2 + path_len),
+		  header_len - LEVEL_0_MIN_HEADER_LEN - path_len);
+	}
 
 	return 1;
 }
@@ -688,14 +753,24 @@ LHAFileHeader *lha_file_header_read(LHAInputStream *stream)
 
 	// Sanity check that we got some headers, at least.
 	// Directory entries must have a path, and files must have a
-	// filename.
+	// filename. Symlinks are stored using the same compression method
+	// field string (-lhd-) as directories.
 
-	if (!strcmp(header->compress_method, LHA_COMPRESS_TYPE_DIR)) {
-		if (header->path == NULL) {
+	if (strcmp(header->compress_method, LHA_COMPRESS_TYPE_DIR) != 0) {
+		if (header->filename == NULL) {
 			goto fail;
 		}
+	} else if (!strcmp(header->compress_method, LHA_COMPRESS_TYPE_DIR)
+	        && (header->extra_flags & LHA_FILE_UNIX_PERMS) != 0
+		&& header->filename != NULL
+		&& (header->unix_perms & 0170000) == 0120000) {
+
+		if (!parse_symlink(header)) {
+			goto fail;
+		}
+
 	} else {
-		if (header->filename == NULL) {
+		if (header->path == NULL) {
 			goto fail;
 		}
 	}
@@ -742,6 +817,7 @@ void lha_file_header_free(LHAFileHeader *header)
 
 	free(header->filename);
 	free(header->path);
+	free(header->symlink_target);
 	free(header->unix_username);
 	free(header->unix_group);
 	free(header);

@@ -30,19 +30,6 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "list.h"
 #include "safe.h"
 
-static float compression_percent(size_t compressed, size_t uncompressed)
-{
-	float factor;
-
-	if (uncompressed > 0) {
-		factor = (float) compressed / (float) uncompressed;
-	} else {
-		factor = 1.0f;
-	}
-
-	return factor * 100.0f;
-}
-
 typedef struct {
 	unsigned int num_files;
 	unsigned int compressed_length;
@@ -107,7 +94,7 @@ static char *os_type_to_string(uint8_t os_type)
 
 static void permission_column_print(LHAFileHeader *header)
 {
-	const char *perms = "drwxrwxrwx";
+	const char *perms = "rwxrwxrwx";
 	unsigned int i;
 
 	if ((header->extra_flags & LHA_FILE_UNIX_PERMS) == 0) {
@@ -115,8 +102,16 @@ static void permission_column_print(LHAFileHeader *header)
 		return;
 	}
 
-	for (i = 0; i < 10; ++i) {
-		if (header->unix_perms & (1U << (9 - i))) {
+	if (strcmp(header->compress_method, LHA_COMPRESS_TYPE_DIR) != 0) {
+		printf("-");
+	} else if (header->symlink_target != NULL) {
+		printf("l");
+	} else {
+		printf("d");
+	}
+
+	for (i = 0; i < 9; ++i) {
+		if (header->unix_perms & (1U << (8 - i))) {
 			printf("%c", perms[i]);
 		} else {
 			printf("-");
@@ -202,6 +197,15 @@ static ListColumn size_column = {
 
 // Compression ratio
 
+static float compression_percent(size_t compressed, size_t uncompressed)
+{
+	if (uncompressed > 0) {
+		return ((float) compressed * 100.0f) / (float) uncompressed;
+	} else {
+		return 100.0f;
+	}
+}
+
 static void ratio_column_print(LHAFileHeader *header)
 {
 	if (!strcmp(header->compress_method, "-lhd-")) {
@@ -214,8 +218,12 @@ static void ratio_column_print(LHAFileHeader *header)
 
 static void ratio_column_footer(FileStatistics *stats)
 {
-	printf("%5.1f%%", compression_percent(stats->compressed_length,
-	                                      stats->length));
+	if (stats->length == 0) {
+		printf("******");
+	} else {
+		printf("%5.1f%%", compression_percent(stats->compressed_length,
+		                                      stats->length));
+	}
 }
 
 static ListColumn ratio_column = {
@@ -235,6 +243,29 @@ static ListColumn method_crc_column = {
 	"METHOD CRC", 10,
 	method_crc_column_print
 };
+
+// Get the current time.
+
+static time_t get_now_time(void)
+{
+	// For test builds, allow the current time to be overridden using
+	// an environment variable. This is because the list output can
+	// change depending on the current date.
+
+#ifdef TEST_BUILD
+	char *env_val;
+	unsigned int result;
+
+	env_val = getenv("TEST_NOW_TIME");
+
+	if (env_val != NULL
+	 && sscanf(env_val, "%u", &result) == 1) {
+		return (time_t) result;
+	}
+#endif
+
+	return time(NULL);
+}
 
 // File timestamp
 
@@ -262,7 +293,7 @@ static void output_timestamp(unsigned int timestamp)
 	// If this is an old time (more than 6 months), print the year.
 	// For recent timestamps, print the time.
 
-	tmp = time(NULL);
+	tmp = get_now_time();
 
 	if ((time_t) timestamp > tmp - 6 * 30 * 24 * 60 * 60) {
 		printf("%02i:%02i", ts->tm_hour, ts->tm_min);
@@ -297,6 +328,9 @@ static void name_column_print(LHAFileHeader *header)
 	if (header->filename != NULL) {
 		safe_printf("%s", header->filename);
 	}
+	if (header->symlink_target != NULL) {
+		safe_printf(" -> %s", header->symlink_target);
+	}
 }
 
 static ListColumn name_column = {
@@ -320,6 +354,16 @@ static void whole_line_name_column_print(LHAFileHeader *header)
 	if (header->filename != NULL) {
 		safe_printf("%s", header->filename);
 	}
+
+	// For wide filename mode (-v), | is used as the symlink separator,
+	// instead of ->. The reason is that this is how symlinks are
+	// represented within the file headers - the Unix LHA tool only
+	// does the parsing in normal list mode.
+
+	if (header->symlink_target != NULL) {
+		safe_printf("|%s", header->symlink_target);
+	}
+
 	printf("\n");
 }
 

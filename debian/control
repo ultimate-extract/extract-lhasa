@@ -11,7 +11,7 @@ Vcs-Git: git://git.debian.org/git/collab-maint/lhasa.git
 
 Package: lhasa
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, liblhasa0 (= ${binary:Version})
 Conflicts: lha (<< 1.14i-10.4)
 Description: lzh archive decompressor
  Lhasa lha is a tool for parsing LHA (.lzh) archives and a free

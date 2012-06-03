@@ -21,8 +21,13 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef LHASA_PUBLIC_LHA_READER_H
 #define LHASA_PUBLIC_LHA_READER_H
 
+#include "lha_decoder.h"
 #include "lha_input_stream.h"
 #include "lha_file_header.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @file lha_reader.h
@@ -39,20 +44,6 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 typedef struct _LHAReader LHAReader;
-
-/**
- * Callback function used for monitoring decode progress.
- * The callback is invoked for every block processed (block size depends on
- * decode algorithm).
- *
- * @param num_blocks      Number of blocks processed so far.
- * @param total_blocks    Total number of blocks to process.
- * @param callback_data   Extra user-specified data passed to the callback.
- */
-
-typedef void (*LHAReaderProgressCallback)(unsigned int num_blocks,
-                                          unsigned int total_blocks,
-                                          void *callback_data);
 
 /**
  * Policy for extracting directories.
@@ -181,7 +172,7 @@ size_t lha_reader_read(LHAReader *reader, void *buf, size_t buf_len);
  */
 
 int lha_reader_check(LHAReader *reader,
-                     LHAReaderProgressCallback callback,
+                     LHADecoderProgressCallback callback,
                      void *callback_data);
 
 /**
@@ -199,8 +190,12 @@ int lha_reader_check(LHAReader *reader,
 
 int lha_reader_extract(LHAReader *reader,
                        char *filename,
-                       LHAReaderProgressCallback callback,
+                       LHADecoderProgressCallback callback,
                        void *callback_data);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* #ifndef LHASA_PUBLIC_LHA_READER_H */
 
