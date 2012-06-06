@@ -1,5 +1,7 @@
-usr/include/liblhasa-1.0/lha_input_stream.h usr/include/liblhasa-1.0
-usr/include/liblhasa-1.0/lha_reader.h usr/include/liblhasa-1.0
-usr/include/liblhasa-1.0/lha_file_header.h usr/include/liblhasa-1.0
-usr/lib/liblhasa.a usr/lib
-usr/lib/liblhasa.so usr/lib
+usr/include/liblhasa-1.0/lha_input_stream.h  usr/include/liblhasa-1.0
+usr/include/liblhasa-1.0/lha_reader.h        usr/include/liblhasa-1.0
+usr/include/liblhasa-1.0/lha_file_header.h   usr/include/liblhasa-1.0
+usr/include/liblhasa-1.0/lha_decoder.h       usr/include/liblhasa-1.0
+usr/include/liblhasa-1.0/lhasa.h             usr/include/liblhasa-1.0
+usr/lib/liblhasa.a                           usr/lib
+usr/lib/liblhasa.so                          usr/lib
