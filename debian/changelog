@@ -1,3 +1,9 @@
+lhasa (0.2.0-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Jonathan Dowland <jmtd@debian.org>  Wed, 04 Sep 2013 07:30:23 +0100
+
 lhasa (0.0.7-2) unstable; urgency=low
 
   * Include some missing headers in the -dev package.

@@ -90,17 +90,12 @@ static char *os_type_to_string(uint8_t os_type)
 	}
 }
 
-// File permissions
+// Print Unix file permissions.
 
-static void permission_column_print(LHAFileHeader *header)
+static void unix_permissions_print(LHAFileHeader *header)
 {
 	const char *perms = "rwxrwxrwx";
 	unsigned int i;
-
-	if ((header->extra_flags & LHA_FILE_UNIX_PERMS) == 0) {
-		printf("%-10s", os_type_to_string(header->os_type));
-		return;
-	}
 
 	if (strcmp(header->compress_method, LHA_COMPRESS_TYPE_DIR) != 0) {
 		printf("-");
@@ -119,6 +114,46 @@ static void permission_column_print(LHAFileHeader *header)
 	}
 }
 
+// Print OS-9 file permissions.
+
+static void os9_permissions_print(LHAFileHeader *header)
+{
+	const char *perms = "sewrewr";
+	unsigned int i;
+
+	if (strcmp(header->compress_method, LHA_COMPRESS_TYPE_DIR) != 0) {
+		printf("-");
+	} else {
+		printf("d");
+	}
+
+	for (i = 0; i < 7; ++i) {
+		if (header->os9_perms & (1U << (6 - i))) {
+			printf("%c", perms[i]);
+		} else {
+			printf("-");
+		}
+	}
+
+	printf("  ");
+}
+
+// File permissions
+
+static void permission_column_print(LHAFileHeader *header)
+{
+	// Print permissions. If we do not have any permissions to
+	// print, fall back to printing the OS type.
+
+	if (LHA_FILE_HAVE_EXTRA(header, LHA_FILE_OS9_PERMS)) {
+		os9_permissions_print(header);
+	} else if (LHA_FILE_HAVE_EXTRA(header, LHA_FILE_UNIX_PERMS)) {
+		unix_permissions_print(header);
+	} else {
+		printf("%-10s", os_type_to_string(header->os_type));
+	}
+}
+
 static void permission_column_footer(FileStatistics *stats)
 {
 	printf(" Total    ");
@@ -134,7 +169,7 @@ static ListColumn permission_column = {
 
 static void unix_uid_gid_column_print(LHAFileHeader *header)
 {
-	if (header->extra_flags & LHA_FILE_UNIX_UID_GID) {
+	if (LHA_FILE_HAVE_EXTRA(header, LHA_FILE_UNIX_UID_GID)) {
 		printf("%5i/%-5i", header->unix_uid, header->unix_gid);
 	} else {
 		printf("           ");
