@@ -60,7 +60,7 @@ typedef uint16_t TreeElement;
 // Number of possible codes in the "temporary table" used to encode the
 // codes table.
 
-#define MAX_TEMP_CODES       19
+#define MAX_TEMP_CODES       20
 
 typedef struct {
 	// Input bit stream.
@@ -489,7 +489,7 @@ static void output_byte(LHANewDecoder *decoder, uint8_t *buf,
 static void copy_from_history(LHANewDecoder *decoder, uint8_t *buf,
                               size_t *buf_len, size_t count)
 {
-	size_t offset;
+	int offset;
 	unsigned int i, start;
 
 	offset = read_offset_code(decoder);
@@ -498,7 +498,8 @@ static void copy_from_history(LHANewDecoder *decoder, uint8_t *buf,
 		return;
 	}
 
-	start = decoder->ringbuf_pos + RING_BUFFER_SIZE - offset - 1;
+	start = decoder->ringbuf_pos + RING_BUFFER_SIZE
+	      - (unsigned int) offset - 1;
 
 	for (i = 0; i < count; ++i) {
 		output_byte(decoder, buf, buf_len,

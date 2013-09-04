@@ -48,6 +48,8 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define LHA_EXT_HEADER_UNIX_USER           0x53
 #define LHA_EXT_HEADER_UNIX_TIMESTAMP      0x54
 
+#define LHA_EXT_HEADER_OS9                 0xcc
+
 /**
  * Structure representing an extended header type.
  */
@@ -121,6 +123,7 @@ static int ext_header_filename_decoder(LHAFileHeader *header,
                                        size_t data_len)
 {
 	char *new_filename;
+	unsigned int i;
 
 	new_filename = malloc(data_len + 1);
 
@@ -130,6 +133,16 @@ static int ext_header_filename_decoder(LHAFileHeader *header,
 
 	memcpy(new_filename, data, data_len);
 	new_filename[data_len] = '\0';
+
+	// Sanitize the filename that was read. It is not allowed to
+	// contain a path separator, which could potentially be used
+	// to do something malicious.
+
+	for (i = 0; new_filename[i] != '\0'; ++i) {
+		if (new_filename[i] == '/') {
+			new_filename[i] = '_';
+		}
+	}
 
 	free(header->filename);
 	header->filename = new_filename;
@@ -264,14 +277,19 @@ static int ext_header_unix_username_decoder(LHAFileHeader *header,
                                             uint8_t *data,
                                             size_t data_len)
 {
-	header->unix_username = malloc(data_len + 1);
+	char *username;
 
-	if (header->unix_username == NULL) {
+	username = malloc(data_len + 1);
+
+	if (username == NULL) {
 		return 0;
 	}
 
-	memcpy(header->unix_username, data, data_len);
-	header->unix_username[data_len] = '\0';
+	memcpy(username, data, data_len);
+	username[data_len] = '\0';
+
+	free(header->unix_username);
+	header->unix_username = username;
 
 	return 1;
 }
@@ -292,14 +310,19 @@ static int ext_header_unix_group_decoder(LHAFileHeader *header,
                                          uint8_t *data,
                                          size_t data_len)
 {
-	header->unix_group = malloc(data_len + 1);
+	char *group;
 
-	if (header->unix_group == NULL) {
+	group = malloc(data_len + 1);
+
+	if (group == NULL) {
 		return 0;
 	}
 
-	memcpy(header->unix_group, data, data_len);
-	header->unix_group[data_len] = '\0';
+	memcpy(group, data, data_len);
+	group[data_len] = '\0';
+
+	free(header->unix_group);
+	header->unix_group = group;
 
 	return 1;
 }
@@ -330,6 +353,30 @@ static LHAExtHeaderType lha_ext_header_unix_timestamp = {
 	4
 };
 
+// OS-9 (6809) header (0xcc)
+//
+// This stores OS-9 filesystem metadata.
+
+static int ext_header_os9_decoder(LHAFileHeader *header,
+                                  uint8_t *data,
+                                  size_t data_len)
+{
+	// TODO: The OS-9 extended header contains various data, but
+	// it's not clear what it's all for. Just extract the
+	// permissions for now.
+
+	header->os9_perms = lha_decode_uint16(data + 7);
+	header->extra_flags |= LHA_FILE_OS9_PERMS;
+
+	return 1;
+}
+
+static LHAExtHeaderType lha_ext_header_os9 = {
+	LHA_EXT_HEADER_OS9,
+	ext_header_os9_decoder,
+	12
+};
+
 // Table of extended headers.
 
 static const LHAExtHeaderType *ext_header_types[] = {
@@ -342,6 +389,7 @@ static const LHAExtHeaderType *ext_header_types[] = {
 	&lha_ext_header_unix_group,
 	&lha_ext_header_unix_timestamp,
 	&lha_ext_header_windows_timestamps,
+	&lha_ext_header_os9,
 };
 
 #define NUM_HEADER_TYPES (sizeof(ext_header_types) / sizeof(*ext_header_types))

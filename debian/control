@@ -1,7 +1,7 @@
 Source: lhasa
 Section: utils
 Priority: optional
-Maintainer: Jon Dowland <jmtd@debian.org>
+Maintainer: Jonathan Dowland <jmtd@debian.org>
 Build-Depends: debhelper (>= 9.20120115), automake (>= 1:1.11.3),
                autoconf (>= 2.68), libtool (>= 2.4.2)
 Standards-Version: 3.9.3
