@@ -6,7 +6,7 @@ dhargs := --parallel
 	prefix="/usr" dh $@ $(dhargs)
 
 override_dh_auto_configure:
-	./autogen.sh
+	sh ./autogen.sh
 	dh_auto_configure $(dhargs) -- --program-suffix=sa
 
 override_dh_auto_clean:
