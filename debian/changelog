@@ -1,3 +1,10 @@
+lhasa (0.2.0-2) unstable; urgency=low
+
+  * use sh to invoke autogen.sh to work around -x permission
+    being dropped for some reason.
+
+ -- Jonathan Dowland <jmtd@debian.org>  Thu, 05 Sep 2013 10:24:49 +0100
+
 lhasa (0.2.0-1) unstable; urgency=low
 
   * New upstream version.
