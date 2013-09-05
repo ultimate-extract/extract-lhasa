@@ -1,3 +1,16 @@
+lhasa (0.2.0+git-1) unstable; urgency=low
+
+  * bump debhelper compat to enable hardening flags.
+  * Since we're at 9 now, make the library and dev packages multiarch
+    aware.
+  * Move to 3.0 (quilt) format.
+  * Fake '0.2.0+git' upstream version (git archive):
+    * git export, so we don't get the autoconf stuff
+    * xz compression
+    * upstream's tags are GPG signed
+
+ -- Jonathan Dowland <jmtd@debian.org>  Thu, 05 Sep 2013 13:39:52 +0100
+
 lhasa (0.2.0-2) unstable; urgency=low
 
   * use sh to invoke autogen.sh to work around -x permission
