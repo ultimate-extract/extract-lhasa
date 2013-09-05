@@ -45,6 +45,8 @@ Package: liblhasa0
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Multi-Arch: same
 Description: lzh archive decompression library
  Lhasa is a library for parsing LHA (.lzh) archives and a free
  replacement for the Unix LHA tool.
