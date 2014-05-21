@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Jonathan Dowland <jmtd@debian.org>
 Build-Depends: debhelper (>= 9.20120115), automake (>= 1:1.11.3),
                autoconf (>= 2.68), libtool (>= 2.4.2)
-Standards-Version: 3.9.3
+Standards-Version: 3.9.5
 Homepage: http://fragglet.github.com/lhasa/
 Vcs-Browser: http://git.debian.org/?p=collab-maint/lhasa.git
 Vcs-Git: git://git.debian.org/git/collab-maint/lhasa.git
@@ -13,6 +13,7 @@ Package: lhasa
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, liblhasa0 (= ${binary:Version})
 Conflicts: lha (<< 1.14i-10.4)
+Provides: lha, lzh-archiver
 Description: lzh archive decompressor
  Lhasa lha is a tool for parsing LHA (.lzh) archives and a free
  replacement for the Unix LHA tool.
