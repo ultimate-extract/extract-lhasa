@@ -1,3 +1,14 @@
+lhasa (0.2.0+git-2) unstable; urgency=medium
+
+  * Bump standards version.
+  * Clean up another autotools symlink on clean.
+  * Ensure 'make check' is run with VERBOSE, so we can get more
+    diagnostic info for #750382.
+  * Add some provides etc. since lha has been removed. Thanks
+    Bob Bib. Closes: #750377.
+
+ -- Jonathan Dowland <jmtd@debian.org>  Thu, 22 May 2014 00:21:01 +0100
+
 lhasa (0.2.0+git-1) unstable; urgency=low
 
   * bump debhelper compat to enable hardening flags.

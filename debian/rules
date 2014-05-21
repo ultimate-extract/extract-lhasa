@@ -5,6 +5,9 @@ dhargs := --parallel
 %:
 	prefix="/usr" dh $@ $(dhargs)
 
+override_dh_auto_test:
+	dh_auto_test $(dhargs) $@ -- VERBOSE=true
+
 override_dh_auto_configure:
 	sh ./autogen.sh
 	dh_auto_configure $(dhargs) -- --program-suffix=sa
@@ -18,6 +21,7 @@ override_dh_auto_clean:
 		autotools/compile \
 		autotools/config.sub \
 		autotools/install-sh \
+		autotools/test-driver \
 		INSTALL \
 		Makefile.in \
 		aclocal.m4 \
