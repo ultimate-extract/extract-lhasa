@@ -22,9 +22,9 @@
 
 . test_common.sh
 
-run_sandbox=/tmp/extract1
-w_sandbox=/tmp/extract2
-gather_sandbox=/tmp/extract3
+run_sandbox="$wd/extract1"
+w_sandbox="$wd/extract2"
+gather_sandbox="$wd/extract3"
 
 remove_sandboxes() {
 	if [ -e "$run_sandbox" ]; then
@@ -208,9 +208,14 @@ lha_check_output() {
 	#echo "lha_check_output: $@"
 	local expected_output="$1"
 	shift
+        output="$wd/output.txt"
 
 	cd "$run_sandbox"
-	test_lha "$@" >/tmp/output.txt 2>&1
+	test_lha "$@" >"$output" 2>&1
+
+	# test outputs have their test root as '/tmp'; adjust accordingly
+	sed -i "s,$wd,/tmp,g" "$output"
+
 	cd "$test_base"
 
 	if $GATHER && [ ! -e "$expected_output" ]; then
@@ -219,12 +224,12 @@ lha_check_output() {
 		cd "$test_base"
 	fi
 
-	if ! diff -u "$expected_output" /tmp/output.txt; then
+	if ! diff -u "$expected_output" "$output"; then
 		fail "Output not as expected for command:" \
 		     "    lha $*" >&2
 	fi
 
-	rm -f /tmp/output.txt
+	rm -f "$output"
 }
 
 # Basic 'lha e' extract.
@@ -305,6 +310,7 @@ test_q1_option() {
 	shift
 
 	make_sandboxes
+	expected="$wd/expected.txt"
 
 	for filename in "$@"; do
 		local symlink=$(get_file_data "$archive_file" \
@@ -314,14 +320,14 @@ test_q1_option() {
 		else
 			printf "\r$filename :\r$filename\t- Melted  \n"
 		fi
-	done >/tmp/expected.txt
+	done >"$expected"
 
-	lha_check_output /tmp/expected.txt \
+	lha_check_output "$expected" \
 	                 eq1 $(test_arc_file "$archive_file")
 
 	check_exists "$archive_file" "$@"
 
-	rm -f /tmp/expected.txt
+	rm -f "$expected"
 
 	remove_sandboxes
 }
@@ -362,9 +368,9 @@ test_i_option() {
 
 	sed 's/\(Symbolic Link \|\r\)\([A-Za-z0-9]*\/\)*/\1/g' \
 	      < "$test_base/output/$archive_file-e.txt"   \
-	      > /tmp/expected.txt
+	      > "$expected"
 
-	lha_check_output /tmp/expected.txt \
+	lha_check_output "$expected" \
 	                 ei $(test_arc_file "$archive_file")
 
 	for filename in "$@"; do
@@ -372,7 +378,7 @@ test_i_option() {
 		check_exists "$archive_file" "$base_filename"
 	done
 
-	rm -f /tmp/expected.txt
+	rm -f "$expected"
 	remove_sandboxes
 }
 
@@ -477,6 +483,11 @@ test_archive lha_os2_208/h3_lfn.lzh         "Long Filename.txt"
 test_archive lha_os2_208/h3_lh0.lzh         "GPL-2.gz"
 test_archive lha_os2_208/h3_lh5.lzh         "gpl-2"
 test_archive lha_os2_208/h3_subdir.lzh      "subdir/subdir2/HELLO.TXT"
+
+test_archive pmarc124/pm0.pma               "gpl-2.gz"
+test_archive pmarc124/pm1.pma               "copying.txt"
+test_archive pmarc124/pm1_long.pma          "long.txt"
+test_archive pmarc124/mtcd.pma              "mtcd.doc" "cd.mtc"
 
 test_archive pmarc2/pm0.pma                 "gpl-2.gz"
 test_archive pmarc2/pm2.pma                 "gpl-2."
