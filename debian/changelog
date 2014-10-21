@@ -1,3 +1,11 @@
+lhasa (0.2.0+git3fe46-1) unstable; urgency=medium
+
+  * New upstream version incorporating patches referred to below
+    (and another few from me) - tests now don't hard-code /tmp.
+  * Bump standards version (no changes needed)
+
+ -- Jonathan Dowland <jmtd@debian.org>  Tue, 21 Oct 2014 20:10:29 +0100
+
 lhasa (0.2.0+git-4) experimental; urgency=medium
 
   * Re-enable tests during build time.

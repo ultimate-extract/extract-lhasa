@@ -38,7 +38,6 @@ test_archive() {
 
 	# CRC test:
 
-	wd=$(mktemp -td test-crc-output.XXXXXX)
 	test_lha t archives/$archive > "$wd/t.txt"
 
 	if ! diff -u output/$archive-t.txt "$wd/t.txt"; then
@@ -123,6 +122,11 @@ test_archive lha_os2_208/h3_lh0.lzh
 test_archive lha_os2_208/h3_lh5.lzh
 test_archive lha_os2_208/h3_lfn.lzh
 test_archive lha_os2_208/h3_subdir.lzh
+
+test_archive pmarc124/pm0.pma
+test_archive pmarc124/pm1.pma
+test_archive pmarc124/pm1_long.pma
+test_archive pmarc124/mtcd.pma
 
 test_archive pmarc2/pm0.pma
 test_archive pmarc2/pm2.pma
