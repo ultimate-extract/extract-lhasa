@@ -5,9 +5,8 @@ dhargs := --parallel
 %:
 	prefix="/usr" dh $@ $(dhargs)
 
-# workaround for #750382. Todo: fix the test!
 override_dh_auto_test:
-	:
+	dh_auto_test $(dhargs) $@ -- VERBOSE=true
 
 override_dh_auto_configure:
 	sh ./autogen.sh

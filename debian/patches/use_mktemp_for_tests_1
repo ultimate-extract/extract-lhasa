@@ -1,0 +1,191 @@
+commit d42ed05f3842dae9064d8801ff9969f0556794e0
+Author: Jonathan Dowland <jmtd@debian.org>
+Date:   Fri Jul 4 17:52:57 2014 +0100
+
+    Stop using predictable paths under /tmp for tests
+    
+    Most of the tests use predicable paths for intermediate files in /tmp.
+    This is a problem on multi-user systems, as it makes the test suite
+    vulnerable to symlink attacks. It may also cause problems with things
+    like buildds.
+    
+    All tests except 'test-extract' are fixed in this patch (that's a
+    bigger piece of work).
+
+diff --git a/test/test-crc-output b/test/test-crc-output
+index cfa8331..7ed7c39 100755
+--- a/test/test-crc-output
++++ b/test/test-crc-output
+@@ -38,23 +38,24 @@ test_archive() {
+ 
+ 	# CRC test:
+ 
+-	test_lha t archives/$archive > /tmp/t.txt
++	wd=$(mktemp -td test-crc-output.XXXXXX)
++	test_lha t archives/$archive > "$wd/t.txt"
+ 
+-	if ! diff -u output/$archive-t.txt /tmp/t.txt; then
++	if ! diff -u output/$archive-t.txt "$wd/t.txt"; then
+ 		fail "Output not as expected for lha t $archive"
+ 	fi
+ 
+-	rm -f /tmp/t.txt
++	rm -f "$wd/t.txt"
+ 
+ 	# Perform the same test, reading from stdin.
+ 
+-	test_lha t - < archives/$archive > /tmp/t.txt
++	test_lha t - < archives/$archive > "$wd/t.txt"
+ 
+-	if ! diff -u output/$archive-t.txt /tmp/t.txt; then
++	if ! diff -u output/$archive-t.txt "$wd/t.txt"; then
+ 		fail "Output not as expected for lha t - < $archive"
+ 	fi
+ 
+-	rm -f /tmp/t.txt
++	rm -f "$wd/t.txt"
+ }
+ 
+ # Length-specific tests:
+diff --git a/test/test-decompress b/test/test-decompress
+index fbce80b..727cb55 100755
+--- a/test/test-decompress
++++ b/test/test-decompress
+@@ -27,15 +27,16 @@
+ test_archive() {
+ 	local archive=$1
+ 
+-	(echo "crc: $2"; echo "length: $3") > /tmp/expected.txt
++	wd=$(mktemp -td test-decompress.XXXXXX)
++	(echo "crc: $2"; echo "length: $3") > "$wd/expected.txt"
+ 
+-	./decompress-crc "archives/$archive" > /tmp/output.txt
++	./decompress-crc "archives/$archive" > "$wd/output.txt"
+ 
+-	if ! diff -u /tmp/expected.txt /tmp/output.txt; then
++	if ! diff -u "$wd/expected.txt" "$wd/output.txt"; then
+ 		fail "Output not as expected for $archive"
+ 	fi
+ 
+-	rm -f /tmp/expected.txt /tmp/output.txt
++	rm -f "$wd/expected.txt" "$wd/output.txt"
+ }
+ 
+ generate_test_line() {
+diff --git a/test/test-dry-run b/test/test-dry-run
+index 7596f1e..94f9bee 100755
+--- a/test/test-dry-run
++++ b/test/test-dry-run
+@@ -22,6 +22,7 @@
+ 
+ . test_common.sh
+ 
++
+ test_dry_run() {
+ 	local option=$1
+ 	local archive_file=$2
+@@ -31,18 +32,20 @@ test_dry_run() {
+ 		archive_file="archives/$archive_file"
+ 	fi
+ 
++	wd=$(mktemp -td test-dry-run.XXXXXX)
+ 	# Only check the last line of output:
+ 
+-	echo "$expected" > /tmp/expected.txt
+-	test_lha $option "$archive_file" > /tmp/output.txt
++	echo "$expected" > "$wd/expected.txt"
++	test_lha $option "$archive_file" > "$wd/output.txt"
+ 
+-	tail -n 1 < /tmp/output.txt > /tmp/output2.txt
++	tail -n 1 < "$wd/output.txt" > "$wd/output2.txt"
+ 
+-	if ! diff /tmp/expected.txt /tmp/output2.txt; then
++	if ! diff "$wd/expected.txt" "$wd/output2.txt"; then
+ 		fail "Output not as expected for $archive_file"
+ 	fi
+ 
+-	rm -f /tmp/expected.txt /tmp/output.txt /tmp/output2.txt
++	rm -f "$wd/expected.txt" "$wd/output.txt" "$wd/output2.txt"
++	rmdir "$wd" || find "$wd"
+ }
+ 
+ test_archive() {
+diff --git a/test/test-file-headers b/test/test-file-headers
+index 5eb0747..c90847e 100755
+--- a/test/test-file-headers
++++ b/test/test-file-headers
+@@ -28,19 +28,20 @@ test_archive() {
+ 	local archive=$1
+ 	local expected="output/$archive-hdr.txt"
+ 
+-	./dump-headers "archives/$archive" > /tmp/hdr.txt
++	wd=$(mktemp -td test-file-headers.XXXXXX)
++	./dump-headers "archives/$archive" > "$wd/hdr.txt"
+ 
+ 	if [ ! -e "$expected" ]; then
+ 		echo "New file: $expected"
+-		cp /tmp/hdr.txt "$expected"
++		cp "$wd/hdr.txt" "$expected"
+ 		cat "$expected"
+ 	fi
+ 
+-	if ! diff -u "$expected" /tmp/hdr.txt; then
++	if ! diff -u "$expected" "$wd/hdr.txt"; then
+ 		fail "Output not as expected for $archive"
+ 	fi
+ 
+-	rm -f /tmp/hdr.txt
++	rm -f "$wd/hdr.txt"
+ }
+ 
+ test_archive larc333/lz4.lzs
+diff --git a/test/test-list-output b/test/test-list-output
+index d42fe04..2a40f40 100755
+--- a/test/test-list-output
++++ b/test/test-list-output
+@@ -30,13 +30,14 @@ check_output() {
+ 	# Check the output for a particular option matches the expected
+ 	# output file.
+ 
+-	test_lha "$@" > /tmp/tmp.txt
++	wd=$(mktemp -td test-list-output.XXXXXX)
++	test_lha "$@" > "$wd/tmp.txt"
+ 
+-	if ! diff -u output/$expected /tmp/tmp.txt; then
++	if ! diff -u output/$expected "$wd/tmp.txt"; then
+ 		fail "Output not as expected for lha $*"
+ 	fi
+ 
+-	rm -f /tmp/tmp.txt
++	rm -f "$wd/tmp.txt"
+ }
+ 
+ gather_output() {
+diff --git a/test/test-print b/test/test-print
+index 07ac307..f85c182 100755
+--- a/test/test-print
++++ b/test/test-print
+@@ -30,18 +30,20 @@ lha_check_output() {
+ 	local expected_output="$1"
+ 	shift
+ 
+-	test_lha "$@" >/tmp/output.txt 2>&1
++        wd=$(mktemp -td test-print.XXXXXX)
++	test_lha "$@" >"$wd/output.txt" 2>&1
+ 
+ 	if $GATHER && [ ! -e "$expected_output" ]; then
+ 		$LHA_TOOL "$@" > $expected_output
+ 	fi
+ 
+-	if ! diff -u "$expected_output" /tmp/output.txt; then
++	if ! diff -u "$expected_output" "$wd/output.txt"; then
+ 		fail "Output not as expected for command:" \
+ 		     "    lha $*" >&2
+ 	fi
+ 
+-	rm -f /tmp/output.txt
++	rm -f "$wd/output.txt"
++	rmdir "$wd"
+ }
+ 
+ test_archive() {
