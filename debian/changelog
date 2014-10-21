@@ -1,3 +1,11 @@
+lhasa (0.2.0+git-4) experimental; urgency=medium
+
+  * Re-enable tests during build time.
+  * Apply patches to avoid using /tmp when running test-extract.
+  * Uploading to experimental for now.
+
+ -- Jonathan Dowland <jmtd@debian.org>  Tue, 21 Oct 2014 02:03:46 +0100
+
 lhasa (0.2.0+git-3) unstable; urgency=medium
 
   * Update Vcs-Git header in control file to reflect the branch upon
