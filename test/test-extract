@@ -208,13 +208,12 @@ lha_check_output() {
 	#echo "lha_check_output: $@"
 	local expected_output="$1"
 	shift
-        output="$wd/output.txt"
+	local output="$wd/output.txt"
 
 	cd "$run_sandbox"
-	test_lha "$@" >"$output" 2>&1
-
+	# Invoke test command and save output.
 	# test outputs have their test root as '/tmp'; adjust accordingly
-	sed -i "s,$wd,/tmp,g" "$output"
+	test_lha "$@" 2>&1 | sed "s,$wd,/tmp,g; \$a\\" > "$output"
 
 	cd "$test_base"
 
@@ -362,12 +361,14 @@ test_i_option() {
 
 	make_sandboxes
 
-	# Hackishly transform the file containing the expected output
-	# to remove the parent directory. This gives the expected
-	# output when using the -i option.
-
-	sed 's/\(Symbolic Link \|\r\)\([A-Za-z0-9]*\/\)*/\1/g' \
-	      < "$test_base/output/$archive_file-e.txt"   \
+	# Hackishly transform the file containing the expected output to
+	# remove the parent directory. This gives the expected output when
+	# using the -i option.
+	# The transformation turns out to be a bit complicated because for
+	# "Symbolic Link" lines we only want to transform the left side.
+	sed '/^Symbolic/  s/[A-Za-z0-9\/]*\/\([a-z]* ->\)/\1/;
+	     /^Symbolic/! s/[A-Za-z0-9\/]*\///g'                \
+	      < "$test_base/output/$archive_file-e.txt"         \
 	      > "$expected"
 
 	lha_check_output "$expected" \
@@ -431,6 +432,7 @@ test_archive larc333/lz5.lzs                "gpl-2"
 test_archive larc333/sfx.com                "gpl-2.gz"
 test_archive larc333/subdir.lzs             "subdir/subdir2/hello.txt"
 test_archive larc333/long.lzs               "long.txt"
+test_archive larc333/initial.lzs            "initial.bin"
 
 test_archive lharc113/lh0.lzh               "gpl-2.gz"
 test_archive lharc113/lh1.lzh               "gpl-2"
@@ -788,8 +790,8 @@ test_symlink_security() {
 	make_sandboxes
 
 	SUCCESS_EXPECTED=false \
-	lha_check_output "$test_base/output/$archive_file-e.txt" \
-	    e $(test_arc_file "$archive_file")
+	  lha_check_output "$test_base/output/$archive_file-e.txt" \
+	      e $(test_arc_file "$archive_file")
 
 	check_exists "$archive_file" "$2"
 
