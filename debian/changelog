@@ -1,3 +1,14 @@
+lhasa (0.3.1-1) unstable; urgency=high
+
+  * New upstream release:
+
+     * This release fixes an integer underflow vulnerability in the
+       code for doing LZH level 3 header decodes (TALOS-CAN-0095).
+       Thanks go to Marcin Noga and Regina Wilson of Cisco TALOS for
+       reporting this vulnerability.
+
+ -- Jonathan Dowland <jmtd@debian.org>  Thu, 31 Mar 2016 21:01:32 +0100
+
 lhasa (0.3.0-1) experimental; urgency=medium
 
   * New upstream version.
