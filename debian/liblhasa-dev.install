@@ -5,3 +5,4 @@ usr/include/liblhasa-1.0/lha_decoder.h
 usr/include/liblhasa-1.0/lhasa.h
 usr/lib/*/liblhasa.a
 usr/lib/*/liblhasa.so
+usr/lib/*/pkgconfig/liblhasa.pc
