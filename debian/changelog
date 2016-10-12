@@ -1,3 +1,11 @@
+lhasa (0.3.1-2) unstable; urgency=medium
+
+  * Add tzdata to build-depends. Thanks James Cowgill. Closes: #839486.
+  * ship the .pc file in our dev package. Closes: #823671.
+  * Bump standards version (no changes required)
+
+ -- Jonathan Dowland <jmtd@debian.org>  Wed, 12 Oct 2016 23:07:29 +0100
+
 lhasa (0.3.1-1) unstable; urgency=high
 
   * New upstream release:
