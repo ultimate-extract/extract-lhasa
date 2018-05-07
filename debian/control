@@ -2,12 +2,12 @@ Source: lhasa
 Section: utils
 Priority: optional
 Maintainer: Jonathan Dowland <jmtd@debian.org>
-Build-Depends: debhelper (>= 9.20120115), automake (>= 1:1.11.3),
+Build-Depends: debhelper (>= 11~), automake (>= 1:1.11.3),
                autoconf (>= 2.68), libtool (>= 2.4.2), tzdata
-Standards-Version: 3.9.8
+Standards-Version: 4.1.4
 Homepage: http://fragglet.github.com/lhasa/
-Vcs-Browser: http://anonscm.debian.org/cgit/collab-maint/lhasa.git
-Vcs-Git: git://anonscm.debian.org/collab-maint/lhasa.git -b debian
+Vcs-Browser: https://salsa.debian.org/debian/lhasa
+Vcs-Git: https://salsa.debian.org/debian/lhasa.git -b debian
 
 Package: lhasa
 Architecture: any
@@ -30,6 +30,7 @@ Description: lzh archive decompressor
 
 Package: liblhasa-dev
 Section: libdevel
+Multi-Arch: same
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, liblhasa0 (= ${binary:Version})
 Description: lzh decompression library - development files 

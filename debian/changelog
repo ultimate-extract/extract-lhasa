@@ -1,3 +1,13 @@
+lhasa (0.3.1-3) unstable; urgency=medium
+
+  * New Vcs-* values; migrated to salsa.debian.org
+  * Bump standards version.
+  * Bump debhelper version and drop explicit "./autogen.sh": this should
+    resolve hardening flags warnings
+  * Add Multi-Arch header for -dev package, should resolve a hinter warning
+
+ -- Jonathan Dowland <jmtd@debian.org>  Mon, 07 May 2018 23:45:00 +0100
+
 lhasa (0.3.1-2) unstable; urgency=medium
 
   * Add tzdata to build-depends. Thanks James Cowgill. Closes: #839486.
