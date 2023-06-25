@@ -1,3 +1,24 @@
+lhasa (0.4.0-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * d/control: Remove trailing whitespaces
+
+  [ Jonathan Dowland ]
+  * Add a watch file.
+
+  [ Debian Janitor ]
+  * Trim trailing whitespace.
+  * Use secure URI in Homepage field.
+  * Bump debhelper from old 11 to 12.
+  * Set debhelper-compat version in Build-Depends.
+
+  [ Jonathan Dowland ]
+  * Correct Homepage: field in control file.
+  * New Upstream version.
+  * Add lintian overrides for self-extracting EXEs in the test suite.
+
+ -- Jonathan Dowland <jmtd@debian.org>  Sun, 25 Jun 2023 22:01:33 +0100
+
 lhasa (0.3.1-3) unstable; urgency=medium
 
   * New Vcs-* values; migrated to salsa.debian.org
