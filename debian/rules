@@ -32,4 +32,3 @@ override_dh_auto_clean:
 		pkg/Makefile.in \
 		src/Makefile.in \
 		test/Makefile.in
-

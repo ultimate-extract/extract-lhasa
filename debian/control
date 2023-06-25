@@ -2,10 +2,10 @@ Source: lhasa
 Section: utils
 Priority: optional
 Maintainer: Jonathan Dowland <jmtd@debian.org>
-Build-Depends: debhelper (>= 11~), automake (>= 1:1.11.3),
+Build-Depends: debhelper-compat (= 12), automake (>= 1:1.11.3),
                autoconf (>= 2.68), libtool (>= 2.4.2), tzdata
 Standards-Version: 4.1.4
-Homepage: http://fragglet.github.com/lhasa/
+Homepage: https://fragglet.github.io/lhasa/
 Vcs-Browser: https://salsa.debian.org/debian/lhasa
 Vcs-Git: https://salsa.debian.org/debian/lhasa.git -b debian
 
@@ -33,7 +33,7 @@ Section: libdevel
 Multi-Arch: same
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, liblhasa0 (= ${binary:Version})
-Description: lzh decompression library - development files 
+Description: lzh decompression library - development files
  Lhasa is a library for parsing LHA (.lzh) archives and a free
  replacement for the Unix LHA tool.
  .
