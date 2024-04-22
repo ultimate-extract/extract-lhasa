@@ -1,7 +1,8 @@
 Source: lhasa
 Section: utils
 Priority: optional
-Maintainer: Jonathan Dowland <jmtd@debian.org>
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+XSBC-Original-Maintainer: Jonathan Dowland <jmtd@debian.org>
 Build-Depends: debhelper-compat (= 12), automake (>= 1:1.11.3),
                autoconf (>= 2.68), libtool (>= 2.4.2), tzdata
 Standards-Version: 4.1.4
