@@ -1,0 +1,31 @@
+name: Build and release
+
+on:
+  push:
+    tags:
+      - '**'
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: configure
+      run: ./autogen.sh && CFLAGS=-O3 CXXFLAGS=-O3 ./configure --prefix=`pwd`/root --exec-prefix=`pwd`/root --enable-static
+
+    - name: Build
+      run: make -j && make install && strip ./root/bin/lha
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        tag_name: "${{ github.ref_name }}"
+        name: "${{ github.ref_name }}"
+        make_latest: true
+        files: |
+            root/bin/lha
