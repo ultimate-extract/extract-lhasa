@@ -15,7 +15,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: configure
-      run: CFLAGS=-O3 CXXFLAGS=-O3 ./configure --prefix=`pwd`/root --exec-prefix=`pwd`/root --enable-static
+      run: ./autogen.sh && CFLAGS=-O3 CXXFLAGS=-O3 ./configure --prefix=`pwd`/root --exec-prefix=`pwd`/root --enable-static
 
     - name: Build
       run: make -j && make install && strip ./root/bin/lha
